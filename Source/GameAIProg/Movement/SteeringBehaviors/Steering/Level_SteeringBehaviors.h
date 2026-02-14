@@ -38,6 +38,7 @@ private:
 		Arrive,
 		Evade,
 		Pursuit,
+		Face,
 
 		// @ End
 		Count
