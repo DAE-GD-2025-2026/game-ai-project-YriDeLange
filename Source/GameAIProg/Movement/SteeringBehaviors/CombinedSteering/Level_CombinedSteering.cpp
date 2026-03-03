@@ -15,6 +15,37 @@ void ALevel_CombinedSteering::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Spawn the wanderer agent (just wanders freely)
+	pWandererAgent = GetWorld()->SpawnActor<ASteeringAgent>(
+		SteeringAgentClass, FVector{ 200.f, 0.f, 90.f }, FRotator::ZeroRotator);
+	pWanderBehavior = std::make_unique<Wander>();
+	pWandererAgent->SetIsAutoOrienting(true);
+	pWandererAgent->SetSteeringBehavior(pWanderBehavior.get());
+
+	// Spawn the seeker agent — uses BlendedSteering (Seek + Wander)
+	// wrapped in PrioritySteering with Evade taking priority
+	pSeekerAgent = GetWorld()->SpawnActor<ASteeringAgent>(
+		SteeringAgentClass, FVector{ -200.f, 0.f, 90.f }, FRotator::ZeroRotator);
+	pSeekerAgent->SetIsAutoOrienting(true);
+
+	pSeekBehavior = std::make_unique<Seek>();
+	pEvadeBehavior = std::make_unique<Evade>();
+
+	// BlendedSteering: Seek toward mouse + a little Wander
+	auto pSeekForBlend = std::make_unique<Seek>();
+	auto pWanderForBlend = std::make_unique<Wander>();
+
+	pBlendedSteering = std::make_unique<BlendedSteering>(
+		std::vector<BlendedSteering::WeightedBehavior>{
+			{ pSeekBehavior.get(), 0.7f },
+			{ pWanderBehavior.get(), 0.3f }
+	});
+
+	// PrioritySteering: Evade the wanderer first, fall back to BlendedSteering
+	pPrioritySteering = std::make_unique<PrioritySteering>(
+		std::vector<ISteeringBehavior*>{ pEvadeBehavior.get(), pBlendedSteering.get() });
+
+	pSeekerAgent->SetSteeringBehavior(pPrioritySteering.get());
 }
 
 void ALevel_CombinedSteering::BeginDestroy()
@@ -85,20 +116,29 @@ void ALevel_CombinedSteering::Tick(float DeltaTime)
 		ImGui::Spacing();
 
 
-		// ImGuiHelpers::ImGuiSliderFloatWithSetter("Seek",
-		// 	pBlendedSteering->GetWeightedBehaviorsRef()[0].Weight, 0.f, 1.f,
-		// 	[this](float InVal) { pBlendedSteering->GetWeightedBehaviorsRef()[0].Weight = InVal; }, "%.2f");
-		//
-		// ImGuiHelpers::ImGuiSliderFloatWithSetter("Wander",
-		// pBlendedSteering->GetWeightedBehaviorsRef()[1].Weight, 0.f, 1.f,
-		// [this](float InVal) { pBlendedSteering->GetWeightedBehaviorsRef()[1].Weight = InVal; }, "%.2f");
+		 ImGuiHelpers::ImGuiSliderFloatWithSetter("Seek",
+		 	pBlendedSteering->GetWeightedBehaviorsRef()[0].Weight, 0.f, 1.f,
+		 	[this](float InVal) { pBlendedSteering->GetWeightedBehaviorsRef()[0].Weight = InVal; }, "%.2f");
+		
+		 ImGuiHelpers::ImGuiSliderFloatWithSetter("Wander",
+		 pBlendedSteering->GetWeightedBehaviorsRef()[1].Weight, 0.f, 1.f,
+		 [this](float InVal) { pBlendedSteering->GetWeightedBehaviorsRef()[1].Weight = InVal; }, "%.2f");
 	
-		//End
 		ImGui::End();
 	}
 #pragma endregion
 	
 	// Combined Steering Update
- // TODO: implement handling mouse click input for seek
- // TODO: implement Make sure to also evade the wanderer
+	// Update seek target to mouse
+	if (pSeekBehavior)
+		pSeekBehavior->SetTarget(MouseTarget);
+
+	// Update evade target to the wanderer's current position
+	if (pEvadeBehavior && pWandererAgent)
+	{
+		FTargetData WandererTarget;
+		WandererTarget.Position = pWandererAgent->GetPosition();
+		WandererTarget.LinearVelocity = pWandererAgent->GetLinearVelocity();
+		pEvadeBehavior->SetTarget(WandererTarget);
+	}
 }

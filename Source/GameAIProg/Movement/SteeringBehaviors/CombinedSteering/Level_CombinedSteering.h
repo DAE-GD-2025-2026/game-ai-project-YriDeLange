@@ -7,6 +7,7 @@
 #include "GameAIProg/Shared/Level_Base.h"
 #include "GameAIProg/Movement/SteeringBehaviors/Steering/SteeringBehaviors.h"
 #include "GameAIProg/Movement/SteeringBehaviors/SteeringAgent.h"
+#include <memory>
 #include "Level_CombinedSteering.generated.h"
 
 UCLASS()
@@ -32,5 +33,16 @@ private:
 	bool UseMouseTarget = false;
 	bool CanDebugRender = false;
 
-	
+	// Agents
+	ASteeringAgent* pSeekerAgent{ nullptr };
+	ASteeringAgent* pWandererAgent{ nullptr };
+
+	// Individual behaviors (owned here)
+	std::unique_ptr<Seek>   pSeekBehavior{};
+	std::unique_ptr<Wander> pWanderBehavior{};
+	std::unique_ptr<Evade>  pEvadeBehavior{};
+
+	// Combined behaviors (owned here)
+	std::unique_ptr<BlendedSteering>   pBlendedSteering{};
+	std::unique_ptr<PrioritySteering>  pPrioritySteering{};
 };
