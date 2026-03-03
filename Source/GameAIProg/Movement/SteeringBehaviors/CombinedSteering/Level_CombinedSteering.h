@@ -41,6 +41,7 @@ private:
 	std::unique_ptr<Seek>   pSeekBehavior{};
 	std::unique_ptr<Wander> pWanderBehavior{};
 	std::unique_ptr<Evade>  pEvadeBehavior{};
+	std::unique_ptr<Wander> pWandererWanderBehavior{};
 
 	// Combined behaviors (owned here)
 	std::unique_ptr<BlendedSteering>   pBlendedSteering{};

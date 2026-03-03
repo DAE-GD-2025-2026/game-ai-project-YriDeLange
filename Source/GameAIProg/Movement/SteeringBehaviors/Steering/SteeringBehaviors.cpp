@@ -11,23 +11,25 @@ SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
     SteeringOutput Steering{};
     Steering.LinearVelocity = Target.Position - Agent.GetPosition();
 
+    if (Agent.GetDebugRenderingEnabled())
+    {
+        const FVector AgentLoc3D = FVector(Agent.GetPosition(), 0.f);
+        const FVector TargetLoc3D = FVector(Target.Position, 0.f);
 
-    const FVector AgentLoc3D = FVector(Agent.GetPosition(), 0.f);
-    const FVector TargetLoc3D = FVector(Target.Position, 0.f);
+        DrawDebugSphere(Agent.GetWorld(), AgentLoc3D, 20.f, 12, FColor::Yellow, false, -1.f);
 
-    DrawDebugSphere(Agent.GetWorld(), AgentLoc3D, 20.f, 12, FColor::Yellow, false, -1.f);
+        DrawDebugSphere(Agent.GetWorld(), TargetLoc3D, 10.f, 12, FColor::Red, false, -1.f);
 
-    DrawDebugSphere(Agent.GetWorld(), TargetLoc3D, 10.f, 12, FColor::Red, false, -1.f);
+        DrawDebugLine(Agent.GetWorld(), AgentLoc3D, TargetLoc3D, FColor::Green, false, -1.f, 0, 3.f);
 
-    DrawDebugLine(Agent.GetWorld(), AgentLoc3D, TargetLoc3D, FColor::Green, false, -1.f, 0, 3.f);
+        FVector Velocity3D = Agent.GetVelocity();
+        FVector VelocityDir = Velocity3D.GetSafeNormal() * 100.f;
+        DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + VelocityDir, 50.f, FColor::Magenta, false, -1.f, 0, 4.f);
 
-    FVector Velocity3D = Agent.GetVelocity();
-    FVector VelocityDir = Velocity3D.GetSafeNormal() * 100.f;
-    DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + VelocityDir, 50.f, FColor::Magenta, false, -1.f, 0, 4.f);
-
-    float RotationRad = FMath::DegreesToRadians(Agent.GetActorRotation().Yaw);
-    FVector FacingDir = FVector(FMath::Cos(RotationRad), FMath::Sin(RotationRad), 0.f) * 80.f;
-    DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + FacingDir, 40.f, FColor::Cyan, false, -1.f, 0, 3.f);
+        float RotationRad = FMath::DegreesToRadians(Agent.GetActorRotation().Yaw);
+        FVector FacingDir = FVector(FMath::Cos(RotationRad), FMath::Sin(RotationRad), 0.f) * 80.f;
+        DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + FacingDir, 40.f, FColor::Cyan, false, -1.f, 0, 3.f);
+    }
 
     return Steering;
 }
@@ -38,23 +40,25 @@ SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
     SteeringOutput Steering{};
     Steering.LinearVelocity = Agent.GetPosition() - Target.Position;
 
+    if (Agent.GetDebugRenderingEnabled())
+    {
+        const FVector AgentLoc3D = FVector(Agent.GetPosition(), 0.f);
+        const FVector TargetLoc3D = FVector(Target.Position, 0.f);
 
-    const FVector AgentLoc3D = FVector(Agent.GetPosition(), 0.f);
-    const FVector TargetLoc3D = FVector(Target.Position, 0.f);
+        DrawDebugSphere(Agent.GetWorld(), AgentLoc3D, 20.f, 12, FColor::Yellow, false, -1.f);
 
-    DrawDebugSphere(Agent.GetWorld(), AgentLoc3D, 20.f, 12, FColor::Yellow, false, -1.f);
+        DrawDebugSphere(Agent.GetWorld(), TargetLoc3D, 10.f, 12, FColor::Red, false, -1.f);
 
-    DrawDebugSphere(Agent.GetWorld(), TargetLoc3D, 10.f, 12, FColor::Red, false, -1.f);
+        DrawDebugLine(Agent.GetWorld(), AgentLoc3D, TargetLoc3D, FColor::Green, false, -1.f, 0, 3.f);
 
-    DrawDebugLine(Agent.GetWorld(), AgentLoc3D, TargetLoc3D, FColor::Green, false, -1.f, 0, 3.f);
+        FVector Velocity3D = Agent.GetVelocity();
+        FVector VelocityDir = Velocity3D.GetSafeNormal() * 100.f;
+        DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + VelocityDir, 50.f, FColor::Magenta, false, -1.f, 0, 4.f);
 
-    FVector Velocity3D = Agent.GetVelocity();
-    FVector VelocityDir = Velocity3D.GetSafeNormal() * 100.f;
-    DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + VelocityDir, 50.f, FColor::Magenta, false, -1.f, 0, 4.f);
-
-    float RotationRad = FMath::DegreesToRadians(Agent.GetActorRotation().Yaw);
-    FVector FacingDir = FVector(FMath::Cos(RotationRad), FMath::Sin(RotationRad), 0.f) * 80.f;
-    DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + FacingDir, 40.f, FColor::Cyan, false, -1.f, 0, 3.f);
+        float RotationRad = FMath::DegreesToRadians(Agent.GetActorRotation().Yaw);
+        FVector FacingDir = FVector(FMath::Cos(RotationRad), FMath::Sin(RotationRad), 0.f) * 80.f;
+        DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + FacingDir, 40.f, FColor::Cyan, false, -1.f, 0, 3.f);
+    }
 
     return Steering;
 }
@@ -85,27 +89,30 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
         Steering.LinearVelocity = ToTarget;
     }
 
-    const FVector AgentLoc3D = FVector(Agent.GetPosition(), 0.f);
-    const FVector TargetLoc3D = FVector(Target.Position, 0.f);
+    if (Agent.GetDebugRenderingEnabled())
+    {
+        const FVector AgentLoc3D = FVector(Agent.GetPosition(), 0.f);
+        const FVector TargetLoc3D = FVector(Target.Position, 0.f);
 
-    DrawDebugSphere(Agent.GetWorld(), AgentLoc3D, 20.f, 12, FColor::Yellow, false, -1.f);
+        DrawDebugSphere(Agent.GetWorld(), AgentLoc3D, 20.f, 12, FColor::Yellow, false, -1.f);
 
-    DrawDebugSphere(Agent.GetWorld(), TargetLoc3D, 10.f, 12, FColor::Red, false, -1.f);
+        DrawDebugSphere(Agent.GetWorld(), TargetLoc3D, 10.f, 12, FColor::Red, false, -1.f);
 
-    FVector2D DesiredVel2D = Steering.LinearVelocity.GetSafeNormal() * 100.f;
-    FVector DesiredVel3D = FVector(DesiredVel2D, 0.f);
-    DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + DesiredVel3D, 50.f, FColor::Green, false, -1.f, 0, 4.f);
+        FVector2D DesiredVel2D = Steering.LinearVelocity.GetSafeNormal() * 100.f;
+        FVector DesiredVel3D = FVector(DesiredVel2D, 0.f);
+        DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + DesiredVel3D, 50.f, FColor::Green, false, -1.f, 0, 4.f);
 
-    FVector Velocity3D = Agent.GetVelocity();
-    FVector VelocityDir = Velocity3D.GetSafeNormal() * 100.f;
-    DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + VelocityDir, 50.f, FColor::Magenta, false, -1.f, 0, 4.f);
+        FVector Velocity3D = Agent.GetVelocity();
+        FVector VelocityDir = Velocity3D.GetSafeNormal() * 100.f;
+        DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + VelocityDir, 50.f, FColor::Magenta, false, -1.f, 0, 4.f);
 
-    float RotationRad = FMath::DegreesToRadians(Agent.GetActorRotation().Yaw);
-    FVector FacingDir = FVector(FMath::Cos(RotationRad), FMath::Sin(RotationRad), 0.f) * 80.f;
-    DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + FacingDir, 40.f, FColor::Cyan, false, -1.f, 0, 3.f);
+        float RotationRad = FMath::DegreesToRadians(Agent.GetActorRotation().Yaw);
+        FVector FacingDir = FVector(FMath::Cos(RotationRad), FMath::Sin(RotationRad), 0.f) * 80.f;
+        DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + FacingDir, 40.f, FColor::Cyan, false, -1.f, 0, 3.f);
 
-    DrawDebugCircle(Agent.GetWorld(), FVector(Agent.GetPosition().X, Agent.GetPosition().Y, 0.f), TargetRadius, 32, FColor::Red, false, -1.f, 0, 3.f, FVector(0, 1, 0), FVector(1, 0, 0));
-    DrawDebugCircle(Agent.GetWorld(), FVector(Agent.GetPosition().X, Agent.GetPosition().Y, 0.f), SlowRadius, 64, FColor::Blue, false, -1.f, 0, 2.f, FVector(0, 1, 0), FVector(1, 0, 0));
+        DrawDebugCircle(Agent.GetWorld(), FVector(Agent.GetPosition().X, Agent.GetPosition().Y, 0.f), TargetRadius, 32, FColor::Red, false, -1.f, 0, 3.f, FVector(0, 1, 0), FVector(1, 0, 0));
+        DrawDebugCircle(Agent.GetWorld(), FVector(Agent.GetPosition().X, Agent.GetPosition().Y, 0.f), SlowRadius, 64, FColor::Blue, false, -1.f, 0, 2.f, FVector(0, 1, 0), FVector(1, 0, 0));
+    }
 
     return Steering;
 }
@@ -131,21 +138,23 @@ SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
     Steering.AngularVelocity = FMath::Clamp(DeltaYaw / Agent.GetMaxAngularSpeed(), -1.f, 1.f);
 
-    const FVector AgentLoc3D = FVector(Agent.GetPosition(), 0.f);
-    const FVector TargetLoc3D = FVector(Target.Position, 0.f);
+    if (Agent.GetDebugRenderingEnabled())
+    {
+        const FVector AgentLoc3D = FVector(Agent.GetPosition(), 0.f);
+        const FVector TargetLoc3D = FVector(Target.Position, 0.f);
 
-    DrawDebugSphere(Agent.GetWorld(), AgentLoc3D, 20.f, 12, FColor::Yellow, false, -1.f);
-    DrawDebugSphere(Agent.GetWorld(), TargetLoc3D, 10.f, 12, FColor::Red, false, -1.f);
-    DrawDebugLine(Agent.GetWorld(), AgentLoc3D, TargetLoc3D, FColor::Green, false, -1.f, 0, 3.f);
+        DrawDebugSphere(Agent.GetWorld(), AgentLoc3D, 20.f, 12, FColor::Yellow, false, -1.f);
+        DrawDebugSphere(Agent.GetWorld(), TargetLoc3D, 10.f, 12, FColor::Red, false, -1.f);
+        DrawDebugLine(Agent.GetWorld(), AgentLoc3D, TargetLoc3D, FColor::Green, false, -1.f, 0, 3.f);
 
-    float DesiredYawRad = FMath::DegreesToRadians(DesiredYaw);
-    FVector DesiredFacingDir = FVector(FMath::Cos(DesiredYawRad), FMath::Sin(DesiredYawRad), 0.f) * 100.f;
-    DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + DesiredFacingDir, 40.f, FColor::Green, false, -1.f, 0, 3.f);
+        float DesiredYawRad = FMath::DegreesToRadians(DesiredYaw);
+        FVector DesiredFacingDir = FVector(FMath::Cos(DesiredYawRad), FMath::Sin(DesiredYawRad), 0.f) * 100.f;
+        DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + DesiredFacingDir, 40.f, FColor::Green, false, -1.f, 0, 3.f);
 
-    float CurrentYawRad = FMath::DegreesToRadians(CurrentYaw);
-    FVector CurrentFacingDir = FVector(FMath::Cos(CurrentYawRad), FMath::Sin(CurrentYawRad), 0.f) * 80.f;
-    DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + CurrentFacingDir, 40.f, FColor::Cyan, false, -1.f, 0, 3.f);
-
+        float CurrentYawRad = FMath::DegreesToRadians(CurrentYaw);
+        FVector CurrentFacingDir = FVector(FMath::Cos(CurrentYawRad), FMath::Sin(CurrentYawRad), 0.f) * 80.f;
+        DrawDebugDirectionalArrow(Agent.GetWorld(), AgentLoc3D, AgentLoc3D + CurrentFacingDir, 40.f, FColor::Cyan, false, -1.f, 0, 3.f);
+    }
 
     return Steering;
 }
@@ -163,18 +172,20 @@ SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
     FVector2D PredictedPosition = Target.Position + (Target.LinearVelocity * TimeToReach);
     Steering.LinearVelocity = PredictedPosition - Agent.GetPosition();
 
-    const FVector AgentLoc3D = FVector(Agent.GetPosition(), 0.f);
-    const FVector TargetLoc3D = FVector(Target.Position, 0.f);
-    const FVector PredictedLoc3D = FVector(PredictedPosition, 0.f);
+    if (Agent.GetDebugRenderingEnabled())
+    {
+        const FVector AgentLoc3D = FVector(Agent.GetPosition(), 0.f);
+        const FVector TargetLoc3D = FVector(Target.Position, 0.f);
+        const FVector PredictedLoc3D = FVector(PredictedPosition, 0.f);
 
-    DrawDebugSphere(Agent.GetWorld(), AgentLoc3D, 20.f, 12, FColor::Yellow, false, -1.f);
-    DrawDebugSphere(Agent.GetWorld(), TargetLoc3D, 10.f, 12, FColor::Red, false, -1.f);
-    DrawDebugSphere(Agent.GetWorld(), PredictedLoc3D, 10.f, 12, FColor::Orange, false, -1.f);
-    DrawDebugLine(Agent.GetWorld(), AgentLoc3D, TargetLoc3D, FColor::Red, false, -1.f, 0, 2.f);
-    DrawDebugLine(Agent.GetWorld(), AgentLoc3D, PredictedLoc3D, FColor::Green, false, -1.f, 0, 3.f);
-    FVector TargetVel3D = FVector(Target.LinearVelocity, 0.f) * 0.5f;
-    DrawDebugDirectionalArrow(Agent.GetWorld(), TargetLoc3D, TargetLoc3D + TargetVel3D, 40.f, FColor::Orange, false, -1.f, 0, 3.f);
-
+        DrawDebugSphere(Agent.GetWorld(), AgentLoc3D, 20.f, 12, FColor::Yellow, false, -1.f);
+        DrawDebugSphere(Agent.GetWorld(), TargetLoc3D, 10.f, 12, FColor::Red, false, -1.f);
+        DrawDebugSphere(Agent.GetWorld(), PredictedLoc3D, 10.f, 12, FColor::Orange, false, -1.f);
+        DrawDebugLine(Agent.GetWorld(), AgentLoc3D, TargetLoc3D, FColor::Red, false, -1.f, 0, 2.f);
+        DrawDebugLine(Agent.GetWorld(), AgentLoc3D, PredictedLoc3D, FColor::Green, false, -1.f, 0, 3.f);
+        FVector TargetVel3D = FVector(Target.LinearVelocity, 0.f) * 0.5f;
+        DrawDebugDirectionalArrow(Agent.GetWorld(), TargetLoc3D, TargetLoc3D + TargetVel3D, 40.f, FColor::Orange, false, -1.f, 0, 3.f);
+    }
 
     return Steering;
 }
@@ -185,26 +196,37 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
     SteeringOutput Steering{};
     FVector2D ToTarget = Target.Position - Agent.GetPosition();
     float Distance = ToTarget.Size();
+
+    // Only evade if within range
+    const float EvadeRadius = 300.f;
+    if (Distance > EvadeRadius)
+    {
+        Steering.IsValid = false;
+        return Steering;
+    }
+
     float PursuerSpeed = Agent.GetMaxLinearSpeed();
     float TimeToReach = (PursuerSpeed > KINDA_SMALL_NUMBER)
         ? Distance / PursuerSpeed
         : 0.f;
     FVector2D PredictedPosition = Target.Position + (Target.LinearVelocity * TimeToReach);
-    Steering.LinearVelocity = Agent.GetPosition() - PredictedPosition ;
+    Steering.LinearVelocity = Agent.GetPosition() - PredictedPosition;
 
-    const FVector AgentLoc3D = FVector(Agent.GetPosition(), 0.f);
-    const FVector TargetLoc3D = FVector(Target.Position, 0.f);
-    const FVector PredictedLoc3D = FVector(PredictedPosition, 0.f);
+    if (Agent.GetDebugRenderingEnabled())
+    {
+        const FVector AgentLoc3D = FVector(Agent.GetPosition(), 0.f);
+        const FVector TargetLoc3D = FVector(Target.Position, 0.f);
+        const FVector PredictedLoc3D = FVector(PredictedPosition, 0.f);
 
-    DrawDebugSphere(Agent.GetWorld(), AgentLoc3D, 20.f, 12, FColor::Yellow, false, -1.f);
-    DrawDebugSphere(Agent.GetWorld(), TargetLoc3D, 10.f, 12, FColor::Red, false, -1.f);
-    DrawDebugSphere(Agent.GetWorld(), PredictedLoc3D, 10.f, 12, FColor::Orange, false, -1.f);
-    DrawDebugLine(Agent.GetWorld(), AgentLoc3D, TargetLoc3D, FColor::Red, false, -1.f, 0, 2.f);
-    // Line from agent away from the predicted position
-    DrawDebugLine(Agent.GetWorld(), AgentLoc3D, PredictedLoc3D, FColor::Green, false, -1.f, 0, 3.f);
-    FVector TargetVel3D = FVector(Target.LinearVelocity, 0.f) * 0.5f;
-    DrawDebugDirectionalArrow(Agent.GetWorld(), TargetLoc3D, TargetLoc3D + TargetVel3D, 40.f, FColor::Orange, false, -1.f, 0, 3.f);
-
+        DrawDebugSphere(Agent.GetWorld(), AgentLoc3D, 20.f, 12, FColor::Yellow, false, -1.f);
+        DrawDebugSphere(Agent.GetWorld(), TargetLoc3D, 10.f, 12, FColor::Red, false, -1.f);
+        DrawDebugSphere(Agent.GetWorld(), PredictedLoc3D, 10.f, 12, FColor::Orange, false, -1.f);
+        DrawDebugLine(Agent.GetWorld(), AgentLoc3D, TargetLoc3D, FColor::Red, false, -1.f, 0, 2.f);
+        // Line from agent away from the predicted position
+        DrawDebugLine(Agent.GetWorld(), AgentLoc3D, PredictedLoc3D, FColor::Green, false, -1.f, 0, 3.f);
+        FVector TargetVel3D = FVector(Target.LinearVelocity, 0.f) * 0.5f;
+        DrawDebugDirectionalArrow(Agent.GetWorld(), TargetLoc3D, TargetLoc3D + TargetVel3D, 40.f, FColor::Orange, false, -1.f, 0, 3.f);
+    }
 
     return Steering;
 }
@@ -253,35 +275,38 @@ SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
         Steering.LinearVelocity = FVector2D::ZeroVector;
     }
 
-    const FVector AgentLoc = FVector(Agent.GetPosition(), 0.f);
-    const FVector CenterLoc = FVector(CircleCenter, 0.f);
-    const FVector TargetLoc = FVector(TargetPosition, 0.f);
+    if (Agent.GetDebugRenderingEnabled())
+    {
+        const FVector AgentLoc = FVector(Agent.GetPosition(), 0.f);
+        const FVector CenterLoc = FVector(CircleCenter, 0.f);
+        const FVector TargetLoc = FVector(TargetPosition, 0.f);
 
-    DrawDebugLine(Agent.GetWorld(), AgentLoc, CenterLoc, FColor::Cyan, false, -1.f, 0, 2.f);
+        DrawDebugLine(Agent.GetWorld(), AgentLoc, CenterLoc, FColor::Cyan, false, -1.f, 0, 2.f);
 
-    DrawDebugLine(Agent.GetWorld(), CenterLoc, TargetLoc, FColor::Green, false, -1.f, 0, 3.f);
+        DrawDebugLine(Agent.GetWorld(), CenterLoc, TargetLoc, FColor::Green, false, -1.f, 0, 3.f);
 
-    DrawDebugCircle(
-        Agent.GetWorld(),
-        CenterLoc,
-        m_Radius,
-        32,
-        FColor::Blue,
-        false, -1.f, 0, 2.f,
-        FVector(0, 0, 1)
-    );
+        DrawDebugCircle(
+            Agent.GetWorld(),
+            CenterLoc,
+            m_Radius,
+            32,
+            FColor::Blue,
+            false, -1.f, 0, 2.f,
+            FVector(0, 0, 1)
+        );
 
-    DrawDebugSphere(Agent.GetWorld(), TargetLoc, 15.f, 12, FColor::Yellow, false, -1.f);
+        DrawDebugSphere(Agent.GetWorld(), TargetLoc, 15.f, 12, FColor::Yellow, false, -1.f);
 
-    FVector VelocityDisplay = FVector(Velocity3D.X, Velocity3D.Y, 0.f) * 0.5f;
-    DrawDebugDirectionalArrow(
-        Agent.GetWorld(),
-        AgentLoc,
-        AgentLoc + VelocityDisplay,
-        80.f,
-        FColor::Magenta,
-        false, -1.f, 0, 4.f
-    );
+        FVector VelocityDisplay = FVector(Velocity3D.X, Velocity3D.Y, 0.f) * 0.5f;
+        DrawDebugDirectionalArrow(
+            Agent.GetWorld(),
+            AgentLoc,
+            AgentLoc + VelocityDisplay,
+            80.f,
+            FColor::Magenta,
+            false, -1.f, 0, 4.f
+        );
+    }
 
     return Steering;
 }

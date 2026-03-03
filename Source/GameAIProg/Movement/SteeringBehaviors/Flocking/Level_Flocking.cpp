@@ -28,6 +28,13 @@ void ALevel_Flocking::BeginPlay()
 			pAgentToEvade,
 			true)
 			);
+	if (IsValid(pAgentToEvade))
+	{
+		pEvadeAgentWander = std::make_unique<Wander>();
+		pAgentToEvade->SetIsAutoOrienting(true);
+		pAgentToEvade->SetSteeringBehavior(pEvadeAgentWander.get());
+		pAgentToEvade->SetDebugRenderingEnabled(true);
+	}
 }
 
 // Called every frame

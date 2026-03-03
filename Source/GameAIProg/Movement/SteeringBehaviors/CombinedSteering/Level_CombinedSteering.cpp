@@ -15,26 +15,24 @@ void ALevel_CombinedSteering::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Spawn the wanderer agent (just wanders freely)
+	// Spawn the wanderer agent with its own dedicated wander behavior
 	pWandererAgent = GetWorld()->SpawnActor<ASteeringAgent>(
 		SteeringAgentClass, FVector{ 200.f, 0.f, 90.f }, FRotator::ZeroRotator);
-	pWanderBehavior = std::make_unique<Wander>();
+	pWandererWanderBehavior = std::make_unique<Wander>();
 	pWandererAgent->SetIsAutoOrienting(true);
-	pWandererAgent->SetSteeringBehavior(pWanderBehavior.get());
+	pWandererAgent->SetSteeringBehavior(pWandererWanderBehavior.get());
 
-	// Spawn the seeker agent — uses BlendedSteering (Seek + Wander)
-	// wrapped in PrioritySteering with Evade taking priority
+	// Spawn the seeker agent
 	pSeekerAgent = GetWorld()->SpawnActor<ASteeringAgent>(
 		SteeringAgentClass, FVector{ -200.f, 0.f, 90.f }, FRotator::ZeroRotator);
 	pSeekerAgent->SetIsAutoOrienting(true);
 
+	// Seeker's individual behaviors
 	pSeekBehavior = std::make_unique<Seek>();
+	pWanderBehavior = std::make_unique<Wander>();
 	pEvadeBehavior = std::make_unique<Evade>();
 
 	// BlendedSteering: Seek toward mouse + a little Wander
-	auto pSeekForBlend = std::make_unique<Seek>();
-	auto pWanderForBlend = std::make_unique<Wander>();
-
 	pBlendedSteering = std::make_unique<BlendedSteering>(
 		std::vector<BlendedSteering::WeightedBehavior>{
 			{ pSeekBehavior.get(), 0.7f },
