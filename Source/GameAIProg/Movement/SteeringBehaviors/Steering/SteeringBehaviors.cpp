@@ -113,11 +113,14 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
     return Steering;
 }
 
+void Arrive::SetTargetRadius(float radius)
+{
+    TargetRadius = radius;
+}
+
 SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
-    Agent.SetMaxLinearSpeed(0.f);
     SteeringOutput Steering{};
-    Steering.LinearVelocity = Target.Position - Agent.GetPosition();
 
     return Steering;
 }
