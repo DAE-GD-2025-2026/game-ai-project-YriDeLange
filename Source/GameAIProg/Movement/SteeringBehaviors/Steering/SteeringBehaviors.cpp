@@ -121,6 +121,18 @@ void Arrive::SetTargetRadius(float radius)
 SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
     SteeringOutput Steering{};
+    Agent.SetMaxAngularSpeed(360.f);
+
+    FVector2D ToTarget = Target.Position - Agent.GetPosition();
+    if (ToTarget.IsNearlyZero())
+        return Steering;
+
+    float DesiredYaw = FMath::RadiansToDegrees(FMath::Atan2(ToTarget.Y, ToTarget.X));
+    float CurrentYaw = Agent.GetActorRotation().Yaw;
+
+    float DeltaYaw = FMath::UnwindDegrees(DesiredYaw - CurrentYaw);
+
+    Steering.AngularVelocity = FMath::Clamp(DeltaYaw / Agent.GetMaxAngularSpeed(), -1.f, 1.f);
 
     return Steering;
 }
