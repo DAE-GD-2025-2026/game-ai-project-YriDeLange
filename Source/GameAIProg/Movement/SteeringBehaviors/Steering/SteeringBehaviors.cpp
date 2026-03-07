@@ -197,8 +197,7 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
     FVector2D ToTarget = Target.Position - Agent.GetPosition();
     float Distance = ToTarget.Size();
 
-    // Only evade if within range
-    const float EvadeRadius = 300.f;
+    const float EvadeRadius = 1000.f;
     if (Distance > EvadeRadius)
     {
         Steering.IsValid = false;

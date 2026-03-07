@@ -1,6 +1,7 @@
 #include "Flock.h"
 #include "FlockingSteeringBehaviors.h"
 #include "Shared/ImGuiHelpers.h"
+#include "GameAIProg/Movement/SteeringBehaviors/SpacePartitioning/SpacePartitioning.h"
 
 
 Flock::Flock(
@@ -56,6 +57,22 @@ Flock::Flock(
 			Agents[i]->SetSteeringBehavior(pPrioritySteering.get());
 		}
 	}
+
+	pPartitionedSpace = std::make_unique<CellSpace>(
+		pWorld, WorldSize * 2.f, WorldSize * 2.f, NrOfCellsX, NrOfCellsX, FlockSize);
+
+	for (ASteeringAgent* pAgent : Agents)
+	{
+		if (IsValid(pAgent))
+			pPartitionedSpace->AddAgent(*pAgent);
+	}
+
+	OldPositions.SetNum(FlockSize);
+	for (int i = 0; i < FlockSize; ++i)
+	{
+		if (IsValid(Agents[i]))
+			OldPositions[i] = Agents[i]->GetPosition();
+	}
 }
 
 Flock::~Flock()
@@ -77,21 +94,35 @@ void Flock::Tick(float DeltaTime)
 		pEvadeBehavior->SetTarget(EvadeTarget);
 	}
 
-	for (ASteeringAgent* pAgent : Agents)
+	for (int i = 0; i < Agents.Num(); ++i)
 	{
+		ASteeringAgent* pAgent = Agents[i];
 		if (!IsValid(pAgent)) continue;
 
-		RegisterNeighbors(pAgent);
+		if (bUseSpacePartitioning)
+		{
+			pPartitionedSpace->UpdateAgentCell(*pAgent, OldPositions[i]);
+			pPartitionedSpace->RegisterNeighbors(*pAgent, NeighborhoodRadius);
+		}
+		else
+		{
+			RegisterNeighbors(pAgent);
+		}
 
-		if (pSeekBehavior)
-			pSeekBehavior->SetTarget(FTargetData{});
+		OldPositions[i] = pAgent->GetPosition();
 	}
+
+	if (pSeekBehavior)
+		pSeekBehavior->SetTarget(FTargetData{});
 }
 
 void Flock::RenderDebug()
 {
 	if (DebugRenderNeighborhood)
 		RenderNeighborhood();
+
+	if (DebugRenderPartitions && bUseSpacePartitioning)
+		pPartitionedSpace->RenderCells();
 }
 
 void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
@@ -133,6 +164,13 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 		ImGui::Spacing();
 
 		ImGui::Checkbox("Debug Neighborhood", &DebugRenderNeighborhood);
+		bool bPartitioningCopy = bUseSpacePartitioning;
+		if (ImGui::Checkbox("Space Partitioning", &bPartitioningCopy))
+			bUseSpacePartitioning = bPartitioningCopy;
+		ImGui::Spacing();
+		bool bPartitionRenderCopy = DebugRenderPartitions;
+		if (ImGui::Checkbox("Debug Partitions", &bPartitionRenderCopy))
+			DebugRenderPartitions = bPartitionRenderCopy;
 		ImGui::Text("Behavior Weights");
 		auto& Behaviors = pBlendedSteering->GetWeightedBehaviorsRef();
 		float w0 = Behaviors[0].Weight; if (ImGui::SliderFloat("Cohesion", &w0, 0.f, 1.f)) Behaviors[0].Weight = w0;
@@ -177,7 +215,6 @@ void Flock::RenderNeighborhood()
 	}
 }
 
-#ifndef GAMEAI_USE_SPACE_PARTITIONING
 void Flock::RegisterNeighbors(ASteeringAgent* const pAgent)
 {
 	NrOfNeighbors = 0;
@@ -193,28 +230,47 @@ void Flock::RegisterNeighbors(ASteeringAgent* const pAgent)
 		}
 	}
 }
-#endif
+
+int Flock::GetNrOfNeighbors() const
+{
+	if (bUseSpacePartitioning)
+		return pPartitionedSpace->GetNrOfNeighbors();
+	return NrOfNeighbors;
+}
+
+const TArray<ASteeringAgent*>& Flock::GetNeighbors() const
+{
+	if (bUseSpacePartitioning)
+		return pPartitionedSpace->GetNeighbors();
+	return Neighbors;
+}
 
 FVector2D Flock::GetAverageNeighborPos() const
 {
+	int Count = GetNrOfNeighbors();
+	const TArray<ASteeringAgent*>& CurrentNeighbors = GetNeighbors();
+
 	FVector2D AvgPos = FVector2D::ZeroVector;
-	if (NrOfNeighbors == 0) return AvgPos;
+	if (Count == 0) return AvgPos;
 
-	for (int i = 0; i < NrOfNeighbors; ++i)
-		AvgPos += Neighbors[i]->GetPosition();
+	for (int i = 0; i < Count; ++i)
+		AvgPos += CurrentNeighbors[i]->GetPosition();
 
-	return AvgPos / static_cast<float>(NrOfNeighbors);
+	return AvgPos / static_cast<float>(Count);
 }
 
 FVector2D Flock::GetAverageNeighborVelocity() const
 {
+	int Count = GetNrOfNeighbors();
+	const TArray<ASteeringAgent*>& CurrentNeighbors = GetNeighbors();
+
 	FVector2D AvgVel = FVector2D::ZeroVector;
-	if (NrOfNeighbors == 0) return AvgVel;
+	if (Count == 0) return AvgVel;
 
-	for (int i = 0; i < NrOfNeighbors; ++i)
-		AvgVel += Neighbors[i]->GetLinearVelocity();
+	for (int i = 0; i < Count; ++i)
+		AvgVel += CurrentNeighbors[i]->GetLinearVelocity();
 
-	return AvgVel / static_cast<float>(NrOfNeighbors);
+	return AvgVel / static_cast<float>(Count);
 }
 
 void Flock::SetTarget_Seek(FSteeringParams const& Target)
