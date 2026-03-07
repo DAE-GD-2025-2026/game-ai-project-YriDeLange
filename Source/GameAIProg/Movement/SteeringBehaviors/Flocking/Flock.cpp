@@ -200,17 +200,24 @@ void Flock::RenderNeighborhood()
 
 	if (!pFirstValid) return;
 
-	// Re-register neighbors for this specific agent so the data matches
 	RegisterNeighbors(pFirstValid);
 
-	FVector AgentLoc = FVector(pFirstValid->GetPosition(), 0.f);
+	FVector2D AgentPos = pFirstValid->GetPosition();
+	FVector AgentLoc = FVector(AgentPos, 90.f);
 
 	DrawDebugCircle(pWorld, AgentLoc, NeighborhoodRadius, 32,
 		FColor::Yellow, false, -1.f, 0, 2.f, FVector(0, 1, 0), FVector(1, 0, 0));
 
-	for (int i = 0; i < NrOfNeighbors; ++i)
+	if (bUseSpacePartitioning)
 	{
-		FVector NeighborLoc = FVector(Neighbors[i]->GetPosition(), 0.f);
+		FVector BoxCenter = FVector(AgentPos.X, AgentPos.Y, 90.f);
+		FVector BoxExtent = FVector(NeighborhoodRadius, NeighborhoodRadius, 1.f);
+		DrawDebugBox(pWorld, BoxCenter, BoxExtent, FColor::Cyan, false, -1.f, 0, 2.f);
+	}
+
+	for (int i = 0; i < GetNrOfNeighbors(); ++i)
+	{
+		FVector NeighborLoc = FVector(GetNeighbors()[i]->GetPosition(), 90.f);
 		DrawDebugLine(pWorld, AgentLoc, NeighborLoc, FColor::Yellow, false, -1.f, 0, 1.f);
 	}
 }
