@@ -74,7 +74,25 @@ std::vector<Node*> AStar::FindPath(Node* const pStartNode, Node* const pGoalNode
 	}
 
 	if (currentRecord.pNode != pGoalNode)
-		return path;
+	{
+		if (closedList.empty())
+			return path;
+
+		NodeRecord closestRecord = closedList.front();
+		float closestCost = GetHeuristicCost(closestRecord.pNode, pGoalNode);
+
+		for (const NodeRecord& record : closedList)
+		{
+			const float h = GetHeuristicCost(record.pNode, pGoalNode);
+			if (h < closestCost)
+			{
+				closestCost = h;
+				closestRecord = record;
+			}
+		}
+
+		currentRecord = closestRecord;
+	}
 
 	while (currentRecord.pNode != pStartNode)
 	{

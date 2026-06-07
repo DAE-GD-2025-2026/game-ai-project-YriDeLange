@@ -15,3 +15,9 @@ The assignment is implemented in the Pathfinding level and the NavMesh level.
 
 A* Pathfinding is implemented as explained in week 5.
 Navigation Meshes are implemented as explained in week 6.
+
+# Extra Assignment: Fallback Path
+
+The assignment is implemented in the Pathfinding level (which is the startup level)
+
+This extra assignment is from the topic Pathfinding from week 5.
